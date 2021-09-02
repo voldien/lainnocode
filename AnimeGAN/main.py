@@ -80,33 +80,51 @@ def processImageDataset(train_images):
 
 
 def perform_train_model():
+
 	pass
 
 
-def perform_generate_images():
+def perform_generate_images(generate_model):
 	pass
 
+def animeGAN():
 
-if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Anime GAN (Generative Adversarial Networks)')
-	parser.add_argument('integers', metavar='N', type=int, nargs='+',
+	parser.add_argument('epochs', metavar='N',  type=int, nargs='+',
 						help='an integer for the accumulator')
-	parser.add_argument('--model-file', dest='accumulate',
+	parser.add_argument('--model-file', dest='generate_model_filepath',
 						default="",
 						help='Define the save/load model path')
-	parser.add_argument('--checkpoint-filepath', dest='accumulate',
+	parser.add_argument('--checkpoint-filepath', type=str, dest='accumulate',
 						default="./training_checkpoints",
 						help='Define the save/load model path')
-	parser.add_argument('--checkpoint-every-epoch', dest='accumulate',
+	parser.add_argument('--checkpoint-every-epoch', type=str, dest='accumulate',
 						default="",
+						help='Define the save/load model path')
+	parser.add_argument('--verbosity', type=str, dest='accumulate',
+						default="",
+						help='Define the save/load model path')
+
+	parser.add_argument('--image-size', type=tuple, dest='accumulate',
+						default="",
+						help='Define the save/load model path')
+	parser.add_argument('--image-filter', type=tuple, dest='accumulate',
+						default="",
+						help='Define the save/load model path')
+	parser.add_argument('--image-filter', type=tuple, dest='accumulate',
+						default="",
+						help='Define the save/load model path')
+	parser.add_argument('--nr-training-data', type=int, default=-1, dest='train-set-size',
+						help='Define the save/load model path')
+	parser.add_argument('--seed', type=int, default=-1, dest='train-set-size',
 						help='Define the save/load model path')
 
 	args = parser.parse_args()
-	# if generate image
 
-	# model_path = ""
-	# model = tf.keras.load_model(model_path)
-	# image = generate_image(model, 2321)
+	if args.generate_model_filepath:
+		model = tf.keras.load_model(args.generate_model_filepath)
+		image = generate_image(model, 2321)
+		# TODO save
 
 	# if create model
 	dataset_files = ["/media/data-sets/animeface.zip", "/media/data-sets/anime-face-dataset.zip"]
@@ -162,3 +180,6 @@ if __name__ == '__main__':
 
 	# Save the model.
 	generate_model.save("model")
+
+if __name__ == '__main__':
+	animeGAN()
