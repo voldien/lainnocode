@@ -1,27 +1,11 @@
-import zipfile
-from io import StringIO, BytesIO  ## for Python 3
-from tensorboard.plugins.hparams import api as hp
-
 # from ipython_genutils.py3compat import xrange
 
 import tensorflow as tf
-from pip._vendor.msgpack.fallback import xrange
 
 # tf.__version__
 
-import glob
-from tensorboard.plugins.hparams import api as hp
-import imageio
-import os.path
-import matplotlib.pyplot as plt
-import numpy as np
-import os
 from tensorflow.keras import layers
-import time
-from numpy import asarray
-from IPython import display
 
-import concurrent.futures as cf
 
 def make_generator_model(noise_dim, shape):
 
