@@ -1,22 +1,9 @@
-import zipfile
-from io import StringIO, BytesIO  ## for Python 3
-# from tensorboard.plugins.hparams import api as hp
-
-import zipfile
-from io import StringIO, BytesIO  ## for Python 3
-from tensorboard.plugins.hparams import api as hp
-
-import PIL.Image
-
-# from ipython_genutils.py3compat import xrange
-
 import tensorflow as tf
 from pip._vendor.msgpack.fallback import xrange
 
 # tf.__version__
 
 import glob
-from tensorboard.plugins.hparams import api as hp
 import imageio
 import os.path
 import matplotlib.pyplot as plt
@@ -30,65 +17,19 @@ from IPython import display
 
 import concurrent.futures as cf
 
-from AnimeGAN.model import make_generator_model, make_discriminator_model
+from AnimeGAN.dataProcessing import loadDatSet
+from AnimeGAN.model import make_generator_model, make_discriminator_model, train_step
 
 
-def loadImageDataSubSet(path, subset):
-	images = []
-	_n = int(len(subset))
-	with zipfile.ZipFile(path, 'r') as zip:
-		for i in range(_n):
-			file_in_zip = subset[i]
-			if (".jpg" in file_in_zip or ".JPG" in file_in_zip or ".png" in file_in_zip):
-				data = zip.read(file_in_zip)
-				stream = BytesIO(data)
-				image = PIL.Image.open(stream)
-				image = image.resize((128, 128), PIL.Image.BILINEAR)
-				images.append(asarray(image))
-				stream.close()
-	return images
-
-
-def load_image_data(pool, path, size):
-	future_to_image = []
-	with zipfile.ZipFile(path, 'r') as zip:
-		zlist = zip.namelist()
-		nr_chunks = 32
-		chunk_size = int(len(zlist) / nr_chunks)
-		for i in range(nr_chunks):
-			subset = zlist[chunk_size * i: chunk_size * (i + 1)]
-			task = pool.submit(loadImageDataSubSet, path, subset)
-			future_to_image.append(task)
-	return future_to_image
-
-
-def loadDatSet(paths, filter=None, ProcessOverride=None, size=(128, 128)):
-	future_to_image = []
-	total_data = []
-	with cf.ProcessPoolExecutor() as pool:
-		for path in paths:
-			for f in load_image_data(pool, path, size):
-				future_to_image.append(f)
-		for future in cf.as_completed(set(future_to_image)):
-			try:
-				data = future.result()
-				for x in data:
-					total_data.append(x)
-			except Exception as exc:
-				print('%r generated an exception: %s' % ("url", exc))
-			else:
-				print('%r page is %d bytes' % ("url", len(data)))
-			del data
-	return (np.array(total_data), None), (None, None)
-
-
-
-def train(dataset, epochs):
+def train(dataset, epochs, checkpoint):
 	for epoch in range(epochs):
 		start = time.time()
 
 		for image_batch in dataset:
-			train_step(image_batch)
+			train_step(image_batch, batch_size=BATCH_SIZE, noise_dim=noise_dim, generator=generator,
+					   discriminator=discriminator, generator_optimizer=generator_optimizer,
+					   discriminator_optimizer=discriminator_optimizer, cross_entropy=cross_entropy
+					   )
 
 		# Produce images for the GIF as we go
 		# display.clear_output(wait=True)
@@ -124,23 +65,30 @@ def generate_and_save_images(model, epoch, test_input):
 		plt.axis('off')
 
 	plt.savefig('image_at_epoch_{:04d}.png'.format(epoch))
-	# plt.show()
+
+
+# plt.show()
 
 
 # Press the green button in the gutter to run the script.
 def processImageDataset(train_images):
-	train_images = train_images.astype('float32')
+	# train_images = train_images.astype('float32')
 
-	norm1 = train_images / np.linalg.norm(train_images)
-	return norm1
+	# Do per section of the
+	norm1 = []
+	for i in range(len(train_images)):
+		norm1.append(train_images[i].astype('float32') / np.linalg.norm(train_images[i].astype('float32')))
+	return np.array(norm1)
 	pass
 
 
 if __name__ == '__main__':
-	(train_images, train_labels), (_, _) = loadDatSet(
-		["/media/data-sets/animeface.zip", "/media/data-sets/anime-face-dataset.zip"])
+	dataset_files = ["/media/data-sets/animeface.zip", "/media/data-sets/anime-face-dataset.zip"]
 
-	train_images = processImageDataset(train_images)
+	(train_images, train_labels), (_, _) = loadDatSet(
+		dataset_files[0:1])
+
+	train_images = processImageDataset(train_images[0:3000])
 	print(len(train_images))
 
 	BUFFER_SIZE = train_images.shape[0]
@@ -148,26 +96,27 @@ if __name__ == '__main__':
 
 	train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
 
-	generator = make_generator_model()
-	generator.model()
-
 	noise = tf.random.normal([1, 100])
-	with tf.summary.create_file_writer(run_dir).as_default():
-		hp.hparams(hparams)
-	generated_image = generator(noise, training=False, )
+
+	generator = make_generator_model([1, 100], train_images[0].shape)
+	# generator.model()
+
+	generated_image = generator(noise, training=False)
 
 	plt.imshow(generated_image[0, :, :, 0], cmap='gray')
 
-	discriminator = make_discriminator_model()
+	discriminator = make_discriminator_model(train_images[0].shape)
 	decision = discriminator(generated_image)
 	print(decision)
 
 	cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
+	#
 	generator_optimizer = tf.keras.optimizers.Adam(1e-4)
 	discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
-	checkpoint_dir = '../training_checkpoints'
+	#
+	checkpoint_dir = './training_checkpoints'
 	checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
 	checkpoint = tf.train.Checkpoint(generator_optimizer=generator_optimizer,
 									 discriminator_optimizer=discriminator_optimizer,
@@ -178,3 +127,7 @@ if __name__ == '__main__':
 	num_examples_to_generate = 16
 
 	seed = tf.random.normal([num_examples_to_generate, noise_dim])
+
+	train(train_dataset, EPOCHS, checkpoint)
+
+	checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
