@@ -1,9 +1,9 @@
 from operator import itemgetter
-import pandas as pd
-from matplotlib import style
-from mpl_toolkits import mplot3d
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from matplotlib import style
 
 from regression import normalEquation, extendMatrix, vectorCost, poly, linear
 
@@ -27,26 +27,26 @@ plt.show()
 
 plt.suptitle("Polynormal Regression {}".format("housing_price_index.csv"))
 for d in degrees:
-    Xe = extendMatrix([X[0] for i in range(0, d)], True)
-    beta = normalEquation(Xe, y)
+	Xe = extendMatrix([X[0] for i in range(0, d)], True)
+	beta = normalEquation(Xe, y)
 
-    plti = plt.subplot(2, 2, d)
-    plti.scatter(X[0], y)
+	plti = plt.subplot(2, 2, d)
+	plti.scatter(X[0], y)
 
-    for x, _y in zip(X[0], y):
-        predicted = linear(beta, [x ** (i + 1) for i in range(0, d)])
+	for x, _y in zip(X[0], y):
+		predicted = linear(beta, [x ** (i + 1) for i in range(0, d)])
 
-        plti.scatter(x, predicted, color='r')
+		plti.scatter(x, predicted, color='r')
 
-    # Compute least square error.
-    cost = vectorCost(beta, Xe, y)
-    plti.set_title("polynomial degree = {}, cost = {}".format(d, round(cost, 4)))
-    plti.set_xlabel("Years from {}".format(startYear))
-    plti.set_ylabel("Price index")
-    print("D = {}, cost = {}".format(d, cost))
+	# Compute least square error.
+	cost = vectorCost(beta, Xe, y)
+	plti.set_title("polynomial degree = {}, cost = {}".format(d, round(cost, 4)))
+	plti.set_xlabel("Years from {}".format(startYear))
+	plti.set_ylabel("Price index")
+	print("D = {}, cost = {}".format(d, cost))
 
-    # Add best fit
-    XeFit.append([cost, beta])
+	# Add best fit
+	XeFit.append([cost, beta])
 
 plt.show()
 

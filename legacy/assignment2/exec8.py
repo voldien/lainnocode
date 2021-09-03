@@ -2,8 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib import style
-from matplotlib.colors import ListedColormap
-from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 
 from regression import linear
@@ -41,8 +40,8 @@ lineX.append(X.max())
 lineY.append(0 * model.coef_[0])
 lineY.append(X.max() * model.coef_[0])
 for _x, _y in zip(X, y):
-    fy = _x * model.coef_[0]
-    ei.append((fy - _y) ** 2)
+	fy = _x * model.coef_[0]
+	ei.append((fy - _y) ** 2)
 
 nErr = len(ei)
 MSE = nErr / sum(ei)
@@ -51,7 +50,6 @@ plt.scatter(x_train, y_train, c='b')
 plt.scatter(x_test, predict, c='g')
 plt.suptitle("MSE {}".format(MSE))
 plt.show()
-
 
 b1 = model.coef_[0]
 beta = [0, b1]

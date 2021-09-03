@@ -1,12 +1,11 @@
+import math
 from operator import itemgetter
 
-import math
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.colors import ListedColormap
-from mpl_toolkits import mplot3d
 from matplotlib import style
+from matplotlib.colors import ListedColormap
 
 from regression import normalEquation, linear, extendMatrix, vectorCost, gradient
 from statistics import normalizeFeature
@@ -52,11 +51,11 @@ ax.plot_surface(xx, zz, yy, cmap='viridis')
 ax.scatter(x1, x2, y, alpha=1.0, cmap=cmap_bold, linewidth=0.8)
 # Draw lines from point to plane.
 for x, z, y_ in zip(x1, x2, y):
-    predict = linear(beta, (x, z))
-    lineX = [x, x]
-    lineY = [z, z]
-    lineZ = [predict, y_]
-    ax.plot(lineX, lineY, lineZ, linewidth=0.5)
+	predict = linear(beta, (x, z))
+	lineX = [x, x]
+	lineY = [z, z]
+	lineZ = [predict, y_]
+	ax.plot(lineX, lineY, lineZ, linewidth=0.5)
 
 plt.show()
 
@@ -77,17 +76,17 @@ print("Normalized Feature set cost {}".format(float(cost)))
 
 costs = []
 for j in [1.0 / i for i in range(10, 2000, 100)]:
-    for n in range(10, 1000, 10):
-        optimized = gradient(Xe, beta, y, j, n)
+	for n in range(10, 1000, 10):
+		optimized = gradient(Xe, beta, y, j, n)
 
-        combinationCost = vectorCost(optimized, Xe, y)
+		combinationCost = vectorCost(optimized, Xe, y)
 
-        # Deal with invalid numbers
-        if math.isnan(combinationCost) or math.isinf(combinationCost):
-            continue
+		# Deal with invalid numbers
+		if math.isnan(combinationCost) or math.isinf(combinationCost):
+			continue
 
-        costs.append([[n, j], combinationCost])
-        print("steps: {}, alpha: {} beta: {} cost : {}".format(n, float(j), optimized, float(combinationCost)))
+		costs.append([[n, j], combinationCost])
+		print("steps: {}, alpha: {} beta: {} cost : {}".format(n, float(j), optimized, float(combinationCost)))
 
 Sortedoptimal = sorted(costs, key=itemgetter(1))
 optimal = Sortedoptimal[0]

@@ -1,17 +1,13 @@
-from operator import itemgetter
-
-import pandas as pd
-from matplotlib import style
-from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn import model_selection
-from sklearn.linear_model import LogisticRegression, LinearRegression
+import pandas as pd
+from matplotlib import style
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import KFold
 
 style.use('fivethirtyeight')
 columns = ["CudaCores", "BaseClock", "BoostClock", "MemorySpeed", "MemoryConfig", "MemoryBandwidth", "BenchmarkSpeed"
-           ]
+		   ]
 
 # names=["cudaCores", "baseClock", "BoostClock"]
 df = pd.read_csv('datasets/GPUbenchmark.csv', header=None)
@@ -21,26 +17,26 @@ y = np.array(df.loc[:, 6])
 
 
 def getColor(y):
-    return ['b', 'g', 'r', 'c', 'm', 'y'][y]
+	return ['b', 'g', 'r', 'c', 'm', 'y'][y]
 
 
 def get_score(model, x_train, y_train, x_test, y_test):
-    model.fit(x_train, y_train)
-    score = model.score(x_test, y_test)
-    return score
+	model.fit(x_train, y_train)
+	score = model.score(x_test, y_test)
+	return score
 
 
 def crossFold(model, X, y, k):
-    kf = KFold(n_splits=k)
+	kf = KFold(n_splits=k)
 
-    scores = []
-    for train_index, test_index in kf.split(X):
-        X_train, X_test = X[train_index], X[test_index]
-        y_train, y_test = y[train_index], y[test_index]
+	scores = []
+	for train_index, test_index in kf.split(X):
+		X_train, X_test = X[train_index], X[test_index]
+		y_train, y_test = y[train_index], y[test_index]
 
-        score = get_score(model, X_train, y_train, X_test, y_test)
-        scores.append(score)
-    return scores
+		score = get_score(model, X_train, y_train, X_test, y_test)
+		scores.append(score)
+	return scores
 
 
 k = 5
@@ -48,21 +44,20 @@ p = len(X[0])
 
 models = []
 for i in range(1, 7, 1):
-    model = LinearRegression()
+	model = LinearRegression()
 
-    select_X = X.T[0:i].T
-    scores = crossFold(model, select_X, y, k)
-    models.append([scores, i])
+	select_X = X.T[0:i].T
+	scores = crossFold(model, select_X, y, k)
+	models.append([scores, i])
 
 # plot
-lineX = [i for i in range(1,k + 1)]
+lineX = [i for i in range(1, k + 1)]
 lineYs = []
 for scores, i in models:
-    lineYs.append(scores)
-
+	lineYs.append(scores)
 
 for i, lineY in enumerate(lineYs):
-    plt.plot(lineX, lineY, color=getColor(i), label="Feature select {}".format(i + 1))
+	plt.plot(lineX, lineY, color=getColor(i), label="Feature select {}".format(i + 1))
 
 plt.xlabel("nth Split")
 plt.ylabel("Score")
