@@ -8,10 +8,9 @@ from tensorflow.keras import layers
 
 
 def make_generator_model(noise_dim, shape):
-
 	#
 	model = tf.keras.Sequential()
-	model.add(layers.Dense(8 * 8 * 256, use_bias=False, input_shape=(100, )))
+	model.add(layers.Dense(8 * 8 * 256, use_bias=False, input_shape=(100,)))
 	model.add(layers.BatchNormalization())
 	model.add(layers.LeakyReLU())
 
@@ -75,25 +74,24 @@ def generator_loss(cross_entropy, fake_output):
 
 
 @tf.function
-def train_step(images, **kwargs):
+def train_step(dataset, generator, discriminator, generator_optimizer, discriminator_optimizer, cross_entropy, args):
+	# BATCH_SIZE = kwargs["batch_size"]
+	# noise_dim = kwargs["noise_dim"]
+	# generator = kwargs["generator"]
+	# discriminator = kwargs["discriminator"]
+	# generator_optimizer = kwargs["generator_optimizer"]
+	# discriminator_optimizer = kwargs["discriminator_optimizer"]
+	# cross_entropy = kwargs["cross_entropy"]
 
-	BATCH_SIZE = kwargs["batch_size"]
-	noise_dim = kwargs["noise_dim"]
-	generator = kwargs["generator"]
-	discriminator = kwargs["discriminator"]
-	generator_optimizer = kwargs["generator_optimizer"]
-	discriminator_optimizer = kwargs["discriminator_optimizer"]
-	cross_entropy = kwargs["cross_entropy"]
-
-	noise = tf.random.normal([BATCH_SIZE, noise_dim])
+	noise = tf.random.normal([args.batch_size, args.noise_dim])
 
 	with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
 		generated_images = generator(noise, training=True)
 
-		real_output = discriminator(images, training=True)
+		real_output = discriminator(dataset, training=True)
 		fake_output = discriminator(generated_images, training=True)
 
-		gen_loss = generator_loss(cross_entropy,fake_output)
+		gen_loss = generator_loss(cross_entropy, fake_output)
 		disc_loss = discriminator_loss(cross_entropy, real_output, fake_output)
 
 	gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
