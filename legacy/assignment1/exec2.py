@@ -7,14 +7,13 @@ from matplotlib import style
 
 from knn import meanDistance, knnCandidates, euclidean
 
-
-def func(x):
+def expected_polynominal(x):
     return 5 + (12 * x) - (x ** 2) + 0.025 * (x ** 3)
 
 
-def MSE(x):
+def mean_square_error(x):
     n = len(x)
-    est = sum([pow(y_i - func(y_i), 2.0) for y_i in x])
+    est = sum([pow(y_i - expected_polynominal(y_i), 2.0) for y_i in x])
     return (1.0 / n) * est
 
 
@@ -80,7 +79,7 @@ for i, k in enumerate(kTestSet):
         # Compute the different squared from
         # The computed mean distance point and the
         # the real polynomial function.
-        ei = (func(tX[0]) - p[1]) ** 2
+        ei = (expected_polynominal(tX[0]) - p[1]) ** 2
         earr.append(ei)
 
         j = j + 1
