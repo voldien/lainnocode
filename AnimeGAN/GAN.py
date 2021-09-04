@@ -13,13 +13,8 @@ import logging
 from dataProcessing import loadDatSet
 from model import make_generator_model, make_discriminator_model, train_step
 
-
-# tf.__version__
-
-
 def generate_image(model, seed):
 	return model(seed, training=False)
-
 
 def generate_and_save_images(model, epoch, seed):
 	# Notice `training` is set to False.

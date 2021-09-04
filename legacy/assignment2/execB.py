@@ -1,11 +1,10 @@
-import pandas as pd
-from matplotlib import style
-from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from matplotlib import style
 
 from regression import logisticCost, \
-    Sigmod, linear, extendMatrix, logisticGradient
+	Sigmod, linear, extendMatrix, logisticGradient
 from statistics import normalizeFeature, deviation
 
 style.use('fivethirtyeight')
@@ -20,12 +19,12 @@ normalX = np.array(normalizeFeature(X))
 normalY = np.array(normalizeFeature([y]))
 
 for i, x in enumerate(normalX):
-    print("nth", i, "deviation:", deviation(x))
+	print("nth", i, "deviation:", deviation(x))
 
 # Plot normalized
 for x in normalX:
-    for x_, _y in zip(x, y):
-        plt.scatter(x_, _y, color=colorSet[_y])
+	for x_, _y in zip(x, y):
+		plt.scatter(x_, _y, color=colorSet[_y])
 
 plt.show()
 
@@ -51,10 +50,10 @@ print("expected beta : {}, computed beta {}".format(expectedBeta, beta.tolist())
 # gradient descent
 alpha = 0.2035
 for n in range(10, 10000, 500):
-    optimized = logisticGradient(Xe, testBeta, y, alpha, n)
+	optimized = logisticGradient(Xe, testBeta, y, alpha, n)
 
-    combinationCost = logisticCost(Xe, optimized, y, linear)
+	combinationCost = logisticCost(Xe, optimized, y, linear)
 
-    print("alpha {}, iterations: {} cost : {}".format(float(alpha), n, round(combinationCost, 10)))
+	print("alpha {}, iterations: {} cost : {}".format(float(alpha), n, round(combinationCost, 10)))
 
 # gradient descent

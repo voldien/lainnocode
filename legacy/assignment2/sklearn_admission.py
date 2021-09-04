@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib.colors import ListedColormap
 from sklearn.linear_model import LogisticRegression
 
-# Read CSV
+# Read and parse CSV
 X1, X2, y = np.genfromtxt('admission.csv', delimiter=",", unpack=True)
 
 # Degree 2

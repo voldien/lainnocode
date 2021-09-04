@@ -2,7 +2,6 @@ from matplotlib import style
 import numpy as np
 from matplotlib.colors import ListedColormap
 
-
 def mesh2Dgrid(min, max, resolution):
 	if resolution < 0:
 		raise ValueError("Resolution of the grid must be greater than 0.")
