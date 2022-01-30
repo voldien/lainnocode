@@ -1,66 +1,66 @@
 # from ipython_genutils.py3compat import xrange
 
 import tensorflow as tf
-
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import Reshape
+from keras.layers import Conv2D
+from keras.layers import Conv2DTranspose
+from keras.layers import LeakyReLU
+from keras.layers import Conv2D
+from keras.layers import Flatten
+from keras.layers import Dropout
+from keras.layers import LeakyReLU
 # tf.__version__
+from keras.optimizer_v2.adam import Adam
 
 from tensorflow.keras import layers
 
 
-def make_generator_model(noise_dim, shape):
-	#
-	model = tf.keras.Sequential()
-	model.add(layers.Dense(8 * 8 * 256, use_bias=False, input_shape=(100,)))
-	model.add(layers.BatchNormalization())
-	model.add(layers.LeakyReLU())
-
-	model.add(layers.Reshape((8, 8, 256)))
-	assert model.output_shape == (None, 8, 8, 256)  # Note: None is the batch size
-
-	model.add(layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding='same', use_bias=False))
-	assert model.output_shape == (None, 8, 8, 128)
-	model.add(layers.BatchNormalization())
-	model.add(layers.LeakyReLU())
-
-	model.add(layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
-	assert model.output_shape == (None, 16, 16, 64)
-	model.add(layers.BatchNormalization())
-	model.add(layers.LeakyReLU())
-
-	model.add(layers.Conv2DTranspose(32, (5, 5), strides=(2, 2), padding='same', use_bias=False))
-	assert model.output_shape == (None, 32, 32, 32)
-	model.add(layers.BatchNormalization())
-	model.add(layers.LeakyReLU())
-
-	model.add(layers.Conv2DTranspose(3, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
-	model.add(layers.BatchNormalization())
-	model.add(layers.LeakyReLU())
-
-	model.add(layers.Conv2DTranspose(3, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
-	model.add(layers.BatchNormalization())
-	model.add(layers.LeakyReLU())
-
-	assert model.output_shape == (None, shape[0], shape[1], shape[2])
-
+def make_generator_model(noise_dim, input_shape, output_shape=(1, 1)):
+	model = Sequential()
+	# foundation for 4x4 image
+	n_nodes = 256 * 4 * 4
+	model.add(Dense(n_nodes, input_dim=100))
+	model.add(LeakyReLU(alpha=0.2))
+	model.add(Reshape((4, 4, 256)))
+	# upsample to 8x8
+	model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same'))
+	model.add(LeakyReLU(alpha=0.2))
+	# upsample to 16x16
+	model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same'))
+	model.add(LeakyReLU(alpha=0.2))
+	# upsample to 32x32
+	model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same'))
+	model.add(LeakyReLU(alpha=0.2))
+	# output layer
+	model.add(Conv2D(3, (3, 3), activation='tanh', padding='same'))
 	return model
 
 
-def make_discriminator_model(shape):
-	model = tf.keras.Sequential()
-	model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
-							input_shape=shape))
-	model.add(layers.LeakyReLU())
-	model.add(layers.Dropout(0.3))
-
-	model.add(layers.Conv2D(128, (5, 5), strides=(2, 2), padding='same'))
-	model.add(layers.LeakyReLU())
-	model.add(layers.Dropout(0.3))
-
-	model.add(layers.Flatten())
-	model.add(layers.Dense(1))
-
+def make_discriminator_model(input_shape):
+	model = Sequential()
+	#model.add(layers.Rescaling(1. / 255, input_shape=input_shape))
+	# normal
+	model.add(Conv2D(64, (3, 3), padding='same'))
+	model.add(LeakyReLU(alpha=0.2))
+	# downsample
+	model.add(Conv2D(128, (3, 3), strides=(2, 2), padding='same'))
+	model.add(LeakyReLU(alpha=0.2))
+	# downsample
+	model.add(Conv2D(128, (3, 3), strides=(2, 2), padding='same'))
+	model.add(LeakyReLU(alpha=0.2))
+	# downsample
+	model.add(Conv2D(256, (3, 3), strides=(2, 2), padding='same'))
+	model.add(LeakyReLU(alpha=0.2))
+	# classifier
+	model.add(Flatten())
+	model.add(Dropout(0.4))
+	model.add(Dense(1, activation='sigmoid'))
+	# compile model
+	#opt = Adam(lr=0.0002, beta_1=0.5)
+	#model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
 	return model
-
 
 def discriminator_loss(cross_entropy, real_output, fake_output):
 	real_loss = cross_entropy(tf.ones_like(real_output), real_output)
@@ -74,16 +74,9 @@ def generator_loss(cross_entropy, fake_output):
 
 
 @tf.function
-def train_step(dataset, generator, discriminator, generator_optimizer, discriminator_optimizer, cross_entropy, args):
-	# BATCH_SIZE = kwargs["batch_size"]
-	# noise_dim = kwargs["noise_dim"]
-	# generator = kwargs["generator"]
-	# discriminator = kwargs["discriminator"]
-	# generator_optimizer = kwargs["generator_optimizer"]
-	# discriminator_optimizer = kwargs["discriminator_optimizer"]
-	# cross_entropy = kwargs["cross_entropy"]
+def train_step(dataset, generator, discriminator, generator_optimizer, discriminator_optimizer, cross_entropy):
 
-	noise = tf.random.normal([args.batch_size, args.noise_dim])
+	noise = tf.random.normal([32, 100])
 
 	with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
 		generated_images = generator(noise, training=True)

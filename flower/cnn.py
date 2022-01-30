@@ -135,17 +135,6 @@ def compute_cnn_model(trainX, trainY, classes, dataset_name="", model_constructo
 	print('X_test:  ' + str(test_X.shape))
 	print('Y_test:  ' + str(test_y.shape))
 
-	#   tf.keras.layers.Rescaling(1./255),
-	#   tf.keras.layers.Conv2D(32, 3, activation='relu'),
-	#   tf.keras.layers.MaxPooling2D(),
-	#   tf.keras.layers.Conv2D(32, 3, activation='relu'),
-	#   tf.keras.layers.MaxPooling2D(),
-	#   tf.keras.layers.Conv2D(32, 3, activation='relu'),
-	#   tf.keras.layers.MaxPooling2D(),
-	#   tf.keras.layers.Flatten(),
-	#   tf.keras.layers.Dense(128, activation='relu'),
-	#   tf.keras.layers.Dense(num_classes)
-
 	def model_builder(hp):
 		model = model_constructor(hp, image_shape, num_classes_output)
 		return model
@@ -156,6 +145,7 @@ def compute_cnn_model(trainX, trainY, classes, dataset_name="", model_constructo
 	                     factor=3,
 	                     directory='cache',
 	                     project_name=str.format('cnn - {0}', dataset_name))
+
 
 	stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
 	tuner.search(train_X, train_y, epochs=50, validation_split=0.2, callbacks=[stop_early])
