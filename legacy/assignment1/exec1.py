@@ -10,7 +10,6 @@ from knn import KNNClassifier, euclidean, manhattan, minkowski, classifyArray
 def getLabelColor(i):
 	return ['g', 'r', 'b', 'y'][i]
 
-
 # Training sets.
 kTestSet = [1, 3, 5, 7]
 funcSet = [euclidean, manhattan, minkowski]

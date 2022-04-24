@@ -4,31 +4,16 @@ import numpy as np
 
 
 def deviation(X):
-	"""
-
-	:param X:
-	:return:
-	"""
 	return math.sqrt(variance(X))
 
 
 def variance(X):
-	"""
-
-	:param X:
-	:return:
-	"""
 	x_ = mean(X)
 	inv = (1.0 / (len(X) - 1))
 	return inv * sum([(x - x_) ** 2 for x in X])
 
 
 def mean(X):
-	"""
-
-	:param X:
-	:return:
-	"""
 	inv = (1.0 / len(X))
 	return inv * sum(X)
 
@@ -63,11 +48,7 @@ def SE(X, Y, predictY):
 
 
 def normalizeFeature(featuresSet):
-	"""
 
-	:param featuresSet:
-	:return:
-	"""
 	normalized = []
 	for X in featuresSet:
 		om = deviation(X)
@@ -78,19 +59,11 @@ def normalizeFeature(featuresSet):
 
 
 def sigmoid(z):
-	"""
-	Compute sigmoid
-	:param z:
-	:return:
-	"""
+
 	return 1.0 / (1.0 + math.e ** (-z))
 
 
 def softmax(z):
-	"""
 
-	:param z:
-	:return:
-	"""
 	d = sum([math.exp(z_i) for z_i in z])
 	return [math.exp(zi) / (d + 1e-6) for zi in z]

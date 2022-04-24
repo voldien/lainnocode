@@ -4,33 +4,15 @@ import numpy as np
 
 
 def euclidean(a, b, k=1):
-	"""
-
-	:param a:
-	:param b:
-	:return:
-	"""
 	return np.linalg.norm(np.array(a) - np.array(b))
 
 
 def manhattan(a, b, k=1):
-	"""
-
-	:param a:
-	:param b:
-	:return:
-	"""
 	b = np.abs(np.array(a) - np.array(b))
 	return np.sum(b)
 
 
 def minkowski(a, b, k=1):
-	"""
-
-	:param a:
-	:param b:
-	:return:
-	"""
 	q = k
 	qinv = 1.0 / q
 	b = np.abs(np.array(a) - np.array(b))
@@ -39,15 +21,6 @@ def minkowski(a, b, k=1):
 
 
 def KNNClassifier(X, Y, predict, k=3, distance=euclidean):
-	"""
-
-	:param X:
-	:param Y:
-	:param predict:
-	:param k:
-	:param distance:
-	:return:
-	"""
 	votes = knnVoteList(X, Y, predict, k, distance)
 
 	# Get most common label.
@@ -56,15 +29,6 @@ def KNNClassifier(X, Y, predict, k=3, distance=euclidean):
 
 
 def knnVoteList(X, Y, predict, k, distance=euclidean):
-	"""
-
-	:param X:
-	:param Y:
-	:param predict:
-	:param k:
-	:param distance:
-	:return:
-	"""
 	if k < 1:
 		raise ValueError("K must be greater or equal to 1")
 
@@ -87,15 +51,6 @@ def knnVoteList(X, Y, predict, k, distance=euclidean):
 
 
 def knnCandidates(X, Y, predict, k, distance=euclidean):
-	"""
-
-	:param X:
-	:param Y:
-	:param predict:
-	:param k:
-	:param distance:
-	:return:
-	"""
 	if k < 1:
 		raise ValueError("K must be greater or equal to 1")
 
@@ -127,12 +82,7 @@ def classifyArray(X, y, k, xy_mesh, distance=euclidean):
 
 
 def meanDistance(predict, points):
-	"""
 
-	:param predict:
-	:param points:
-	:return:
-	"""
 	if len(points) <= 0:
 		raise ValueError("Must exist atleast a single point")
 	if len(points) == 1:
