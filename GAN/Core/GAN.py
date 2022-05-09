@@ -3,8 +3,8 @@ import argparse
 import logging
 import os
 import pathlib
-import sys
-import time
+from IPython.display import Image
+from tensorflow.keras import layers
 
 import matplotlib.pyplot as plt
 import numpy as np
