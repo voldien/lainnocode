@@ -1,7 +1,5 @@
 import GAN
 
-
-
 import keras.layers
 import tensorflow as tf
 from keras.models import Sequential
@@ -22,153 +20,71 @@ from tensorflow.keras import layers
 
 
 def make_generator_model(noise_dim, input_shape, output_shape=(1, 1)):
-	model = Sequential()
-	# foundation for 4x4 image
-	n_nodes = 256 * 4 * 4
-	model.add(Dense(n_nodes, input_dim=100))
-	# model.add(LeakyReLU(alpha=0.2))
-	# model.add(Dense(512))
-	# model.add(LeakyReLU(alpha=0.2))
-	# model.add(Dense(512))
+	model = tf.keras.Sequential()
 
-	# model.add(Dense(512))
-	# model.add(LeakyReLU(alpha=0.2))
-	# model.add(Dense(n_nodes))
+    init = tf.keras.initializers.TruncatedNormal(stddev=0.02)
 
-	model.add(Reshape((4, 4, 256)))
-	assert model.output_shape == (None, 4, 4, 256)  # Note: None is the batch size
+    n2 = math.log2(float(IMAGE_SIZE[0]))
+    num_layers = max(int(n2) - 4, 0)
 
-	# upsample to 8x8
-	model.add(Conv2DTranspose(512, (4, 4), strides=(1, 1), padding='same'))
-	#	model.add(keras.layers.BatchNormalization())
-	model.add(keras.layers.ReLU())
-	# upsample to 16x16
-	model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same'))
-	# model.add(keras.layers.BatchNormalization())
-	model.add(keras.layers.ReLU())
-	# upsample to 32x32
-	model.add(Conv2DTranspose(64, (4, 4), strides=(2, 2), padding='same'))
-	# model.add(keras.layers.BatchNormalization())
-	model.add(keras.layers.ReLU())
-	# upsample to 64x64
-	model.add(Conv2DTranspose(32, (4, 4), strides=(2, 2), padding='same'))
-	# model.add(keras.layers.BatchNormalization())
-	model.add(keras.layers.ReLU())
-	# # upsample to 128x128
-	# model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same'))
-	# model.add(LeakyReLU(alpha=0.2))
+    # foundation for 4x4 image
+    n_nodes = 1024 * 4 * 4
+    model.add(layers.Dense(
+        n_nodes, kernel_initializer=init, input_dim=input_shape))
+    model.add(layers.BatchNormalization())
+    model.add(layers.ReLU())
 
-	# output layer
-	model.add(Conv2DTranspose(3, (3, 3), strides=(2, 2), activation='tanh', padding='same'))
-	return model
+    model.add(layers.Reshape((4, 4, 1024)))
+    # Note: None is the batch size
+    assert model.output_shape == (None, 4, 4, 1024)
 
+    # upsample to 8x8
+    model.add(layers.Conv2DTranspose(filters=1024, kernel_size=(4, 4), strides=(2, 2),
+                                     use_bias=False, padding='same', kernel_initializer=init))
+    model.add(layers.BatchNormalization())
+    model.add(layers.ReLU())
 
-#
-# def make_generator_model(noise_dim, input_shape, output_shape=(1, 1)):
-# 	model = Sequential()
-# 	# foundation for 4x4 image
-# 	n_nodes = 256 * 4 * 4
-# 	model.add(Dense(n_nodes, input_dim=100))
-# 	# model.add(LeakyReLU(alpha=0.2))
-# 	#model.add(Dense(512))
-# 	# model.add(LeakyReLU(alpha=0.2))
-# 	#model.add(Dense(512))
-#
-# 	#model.add(Dense(512))
-# 	# model.add(LeakyReLU(alpha=0.2))
-# 	#model.add(Dense(n_nodes))
-#
-# 	model.add(Reshape((4, 4, 256)))
-# 	assert model.output_shape == (None, 4, 4, 256)  # Note: None is the batch size
-#
-# 	# upsample to 8x8
-# 	model.add(Conv2DTranspose(512, (4, 4), strides=(2, 2), padding='same'))
-# 	model.add(keras.layers.BatchNormalization())
-# 	model.add(keras.layers.ReLU())
-# 	# upsample to 16x16
-# 	model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same'))
-# 	model.add(keras.layers.BatchNormalization())
-# 	model.add(keras.layers.ReLU())
-# 	# upsample to 32x32
-# 	model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same'))
-# 	model.add(keras.layers.BatchNormalization())
-# 	model.add(keras.layers.ReLU())
-# 	# upsample to 64x64
-# 	model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same'))
-# 	model.add(keras.layers.BatchNormalization())
-# 	model.add(keras.layers.ReLU())
-# 	# # upsample to 128x128
-# 	# model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same'))
-# 	# model.add(LeakyReLU(alpha=0.2))
-#
-# 	# output layer
-# 	model.add(Conv2D(3, (3, 3), activation='tanh', padding='same'))
-# 	return model
+    for i in range(0, num_layers + 1):
+        filter_size = int(512 / (2 ** i))
+        image_size = (16 * (2 ** i), 16 * (2 ** i))
 
+        model.add(layers.Conv2DTranspose(filters=filter_size, kernel_size=(4, 4), strides=(2, 2), use_bias=False, padding='same',
+                                         kernel_initializer=init))
+        model.add(layers.BatchNormalization())
+        model.add(layers.ReLU())
+        assert model.output_shape == (
+            None, image_size[0], image_size[1], filter_size)
 
-# def make_discriminator_model(input_shape):
-# 	model = Sequential()
-# 	# normal
-# 	model.add(Conv2D(64, (3, 3), padding='same', input_shape=input_shape))
-# 	#model.add(LeakyReLU(alpha=0.2))
-# 	# downsample
-# 	model.add(Conv2D(128, (3, 3), strides=(2, 2), padding='same'))
-# 	#model.add(tf.keras.layers.MaxPooling2D(pool_size=2))
-# 	#model.add(LeakyReLU(alpha=0.2))
-#
-# 	# downsample
-# 	model.add(Conv2D(128, (3, 3), strides=(2, 2), padding='same'))
-# 	#model.add(tf.keras.layers.MaxPooling2D(pool_size=2))
-#
-# 	#model.add(LeakyReLU(alpha=0.2))
-# 	# downsample
-# 	model.add(Conv2D(256, (3, 3), strides=(2, 2), padding='same'))
-# 	#model.add(tf.keras.layers.MaxPooling2D(pool_size=2))
-#
-# 	# downsample
-# 	model.add(Conv2D(512, (3, 3), strides=(2, 2), padding='same'))
-# 	#model.add(tf.keras.layers.MaxPooling2D(pool_size=2))
-#
-# 	model.add(Flatten())
-#
-# 	model.add(Dense(512))
-#
-# 	#model.add(LeakyReLU(alpha=0.2))
-# 	#model.add(Dropout(0.3))
-# 	# classifier
-#
-# 	#model.add(Dropout(0.4))
-# 	model.add(Dense(1))
-# 	# compile model
-# 	# opt = Adam(lr=0.0002, beta_1=0.5)
-# 	# model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
-# 	return model
+    # output layer
+    model.add(layers.Conv2DTranspose(filters=3, kernel_size=(4, 4), strides=(
+        1, 1), padding='same', kernel_initializer=init))
+    model.add(layers.Activation('tanh'))
+    # TODO add color channel
+    assert model.output_shape == (None, IMAGE_SIZE[0], IMAGE_SIZE[1], 3)
+    return model
 
 
 def make_discriminator_model(input_shape):
-	model = Sequential()
-	# normal
-	model.add(Conv2D(64, kernel_size=4, strides=(2, 2), use_bias=False, padding='same', input_shape=input_shape))
-	# model.add(keras.layers.BatchNormalization())
-	model.add(LeakyReLU(alpha=0.2))
-	# downsample
-	model.add(Conv2D(128, kernel_size=4, strides=(2, 2), padding='valid', use_bias=False))
-	# model.add(keras.layers.BatchNormalization())
-	model.add(LeakyReLU(alpha=0.2))
+    model = tf.keras.Sequential()
 
-	# downsample
-	model.add(Conv2D(256, kernel_size=4, strides=(2, 2), padding='valid', use_bias=False))
-	# model.add(keras.layers.BatchNormalization())
-	model.add(LeakyReLU(alpha=0.2))
-	# downsample
-	model.add(Conv2D(512, kernel_size=4, strides=(2, 2), padding='valid', use_bias=False))
-	#	model.add(keras.layers.BatchNormalization())
-	model.add(LeakyReLU(alpha=0.2))
+    n_layers = max(int(math.log2(IMAGE_SIZE[1])) - 3, 0)
 
-	model.add(Conv2D(1, kernel_size=4, strides=(2, 2), padding='same', use_bias=False))
+    model.add(layers.Conv2D(filters=64, kernel_size=(3, 3), strides=(2, 2), use_bias=False, padding='same',
+                            input_shape=[IMAGE_SIZE[0], IMAGE_SIZE[1], 3]))
+    model.add(layers.BatchNormalization())
+    model.add(layers.LeakyReLU(alpha=0.2))
 
-	model.add(Flatten())
+    for i in range(0, n_layers):
+        filter_size = 128 * (2 ** i)
+        kernel_size = (5, 5)
+        model.add(layers.Conv2D(filter_size, kernel_size=kernel_size,
+                                strides=(2, 2), use_bias=False, padding='same'))
+        model.add(layers.BatchNormalization())
+        model.add(layers.LeakyReLU(alpha=0.2))
 
-	model.add(Dense(1, activation='sigmoid'))
+    model.add(layers.Conv2D(1, kernel_size=4, strides=(
+        2, 2), padding='valid', use_bias=False))
+    model.add(layers.Flatten())
+    model.add(layers.Activation('sigmoid'))
 
-	return model
+    return model
