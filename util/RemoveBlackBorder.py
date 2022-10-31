@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 from PIL import Image, ImageChops
 import os
@@ -12,18 +13,32 @@ def trim(im):
 	if bbox:
 		return im.crop(bbox)
 
-src_direcotry = os.path.dirname(sys.argv[1])
-dst_direcotry = os.path.dirname(sys.argv[2])
 
-# for root, subdirs, files in os.walk(walk_dir):
-#     print('--\nroot = ' + root)
-#     list_file_path = os.path.join(root, 'my-directory-list.txt')
-#     print('list_file_path = ' + list_file_path)
-for filename in os.listdir(sys.argv[1]):
-	f = os.path.join(src_direcotry, filename)
-	if os.path.isfile(f):
-		print("Open:" + f)
-		im = Image.open(f)
-		image = trim(im)
-		image.save("{0}/{1}".format(dst_direcotry, os.path.basename(f)))
-		image.close()
+src_directory = os.path.dirname(sys.argv[1])
+dst_directory = os.path.dirname(sys.argv[2])
+
+for root, subdirs, files in os.walk(src_directory):
+
+	for filename in files:
+
+		open_file_path = os.path.join(root, filename)
+		subDirectory = str.removeprefix(open_file_path, src_directory).removeprefix('/')
+		subDirectory = os.path.split(subDirectory)[0]
+
+		print('\t- load file %s (full path: %s)' % (filename, open_file_path))
+		if os.path.isfile(open_file_path):
+			save_file_path = os.path.join(os.path.join(dst_directory, subDirectory), filename)
+			Path(os.path.split(save_file_path)[0]).mkdir(parents=True, exist_ok=True)
+
+			try:
+				im = Image.open(open_file_path)
+				#im.verify()
+
+				image = trim(im)
+
+				print('\t- save file %s (full path: %s)' % (filename, save_file_path))
+				image.save(save_file_path)
+				image.close()
+			except:
+				print('\t- Failed to parse file %s (full path: %s)' % (filename, open_file_path))
+				pass
