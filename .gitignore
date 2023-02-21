@@ -396,3 +396,9 @@ cache/
 checkpoints/
 *.npy
 *.npz
+
+
+logs/
+*.png
+*.mp4
+*.json
