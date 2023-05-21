@@ -402,3 +402,5 @@ logs/
 *.png
 *.mp4
 *.json
+
+PyNoteBook/result/
